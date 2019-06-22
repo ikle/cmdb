@@ -39,8 +39,8 @@ static const char *show_path (const char *path)
 
 static int show (struct cmdbc *o, const char *key, void *cookie)
 {
-	void *data;
 	size_t size;
+	char buf[128];
 	const char *attr, *p;
 	size_t avail, len;
 
@@ -50,20 +50,19 @@ static int show (struct cmdbc *o, const char *key, void *cookie)
 	for (p = cmdbc_first (o, key); p != NULL; p = cmdbc_next (o, key, p))
 		printf ("\t%s = %s\n", attr, p);;
 
-	if ((size = cmdbc_export (o, key, &data)) == 0)
+	if ((size = cmdbc_export (o, key, buf, sizeof (buf))) == 0)
 		return 0;
 
 	printf ("export, ");
 	attr = show_path (key);
 
 	for (
-		p = data, avail = size;
+		p = buf, avail = size;
 		(len = strnlen (p, avail)) < avail;
 		++len, p += len, avail -= len
 	)
 		printf ("\t%s = %s\n", attr, p);
 
-	free (data);
 	return 1;
 }
 

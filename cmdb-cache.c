@@ -240,10 +240,11 @@ int cmdbc_import (struct cmdbc *o, const char *key, const void *data,
 	return 1;
 }
 
-size_t cmdbc_export (const struct cmdbc *o, const char *key, void **data)
+size_t cmdbc_export (const struct cmdbc *o, const char *key, void *data,
+		     size_t avail)
 {
 	const struct record sample = { (char *) key }, *r;
-	size_t size, i, avail, len;
+	size_t size, i, len;
 	const char *entry;
 	char *p;
 
@@ -254,10 +255,10 @@ size_t cmdbc_export (const struct cmdbc *o, const char *key, void **data)
 		if ((entry = r->set.table[i]) != NULL)
 			size += snprintf (NULL, 0, "%s", entry) + 1;
 
-	if ((*data = malloc (size)) == NULL)
-		return 0;
+	if (size > avail)
+		return size;
 
-	for (p = *data, avail = size, i = 0; i < r->set.size; ++i)
+	for (p = data, i = 0; i < r->set.size; ++i)
 		if ((entry = r->set.table[i]) != NULL) {
 			len = snprintf (p, avail, "%s", entry) + 1;
 			p += len, avail -= len;
