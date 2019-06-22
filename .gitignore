@@ -4,3 +4,4 @@
 *.pc
 *.swp
 *-test
+*-test.db

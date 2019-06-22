@@ -5,6 +5,6 @@ LIBNAME	= cmdb
 LIBVER	= 0
 LIBREV	= 0.1
 
-DEPENDS	 = ikle-data
+DEPENDS	 = ikle-data tdb
 
 include make-core.mk
