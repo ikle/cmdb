@@ -118,14 +118,8 @@ int cmdbs_store (struct cmdbs *o, const char *key, const char *value)
 
 int cmdbs_delete (struct cmdbs *o, const char *key, const char *value)
 {
-	TDB_DATA k;
-
 	cmdbc_delete (o->cache, key, value);
-
-	k.dptr = (void *) key;
-	k.dsize = strlen (key) + 1;
-
-	return tdb_delete (o->db, k) == 0;
+	return 1;
 }
 
 static int writer (struct cmdbc *cache, const char *key, void *cookie)
@@ -134,16 +128,17 @@ static int writer (struct cmdbc *cache, const char *key, void *cookie)
 	TDB_DATA k, v;
 	int ret;
 
+	k.dptr  = (void *) key;
+	k.dsize = strlen (key) + 1;
+
 	if ((v.dsize = cmdbc_export (cache, key, NULL, 0)) == 0)
-		return 1;
+		/* drop empty nodes */
+		return tdb_delete (o->db, k) == 0;
 
 	if ((v.dptr = malloc (v.dsize)) == NULL)
 		return 0;
 
 	cmdbc_export (cache, key, v.dptr, v.dsize);
-
-	k.dptr  = (void *) key;
-	k.dsize = strlen (key) + 1;
 
 	ret = tdb_store (o->db, k, v, TDB_REPLACE) == 0;
 	free (v.dptr);
