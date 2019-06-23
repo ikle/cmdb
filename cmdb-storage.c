@@ -134,8 +134,10 @@ static int writer (struct cmdbc *cache, const char *key, void *cookie)
 	TDB_DATA k, v;
 	int ret;
 
-	if ((v.dsize = cmdbc_export (cache, key, NULL, 0)) == 0 ||
-	    (v.dptr = malloc (v.dsize)) == NULL)
+	if ((v.dsize = cmdbc_export (cache, key, NULL, 0)) == 0)
+		return 1;
+
+	if ((v.dptr = malloc (v.dsize)) == NULL)
 		return 0;
 
 	cmdbc_export (cache, key, v.dptr, v.dsize);
