@@ -28,7 +28,7 @@ int main (int argc, char *argv[])
 		errx (1, "cannot open database");
 
 	printf ("address %sfound\n",
-		cmdbs_exists (o, "address") ? "" : "not ");
+		cmdbs_exists (o, "address", NULL) ? "" : "not ");
 
 	if (!cmdbs_store (o, "address", "10.0.26.3/24") ||
 	    !cmdbs_store (o, "address", "10.0.26.4/24"))

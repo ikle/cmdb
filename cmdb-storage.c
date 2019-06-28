@@ -69,16 +69,12 @@ const char *cmdbs_error (struct cmdbs *o)
 	return tdb_errorstr (o->db);
 }
 
-int cmdbs_exists (struct cmdbs *o, const char *key)
+int cmdbs_exists (struct cmdbs *o, const char *key, const char *value)
 {
-	TDB_DATA k;
+	if (cmdbs_first (o, key) == NULL)
+		return 0;
 
-	if (cmdbc_first (o->cache, key) != NULL)
-		return 1;
-
-	k.dptr  = (void *) key;
-	k.dsize = strlen (key) + 1;
-	return tdb_exists (o->db, k);
+	return cmdbc_exists (o->cache, key, value);
 }
 
 const char *cmdbs_first (struct cmdbs *o, const char *key)

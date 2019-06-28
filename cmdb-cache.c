@@ -156,6 +156,16 @@ void cmdbc_delete (struct cmdbc *o, const char *key, const char *value)
 	r->changed = 1;
 }
 
+int cmdbc_exists (struct cmdbc *o, const char *key, const char *value)
+{
+	const struct record sample = { (char *) key }, *r;
+
+	if ((r = ht_lookup (&o->root, &sample)) == NULL)
+		return 0;
+
+	return value == NULL || ht_lookup (&r->set, value) != NULL;
+}
+
 size_t cmdbc_count (struct cmdbc *o, const char *key)
 {
 	const struct record sample = { (char *) key }, *r;

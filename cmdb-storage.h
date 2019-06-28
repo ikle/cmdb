@@ -16,7 +16,7 @@ int cmdbs_close (struct cmdbs *o);
 
 const char *cmdbs_error (struct cmdbs *o);
 
-int cmdbs_exists (struct cmdbs *o, const char *key);
+int cmdbs_exists (struct cmdbs *o, const char *key, const char *value);
 const char *cmdbs_first (struct cmdbs *o, const char *key);
 const char *cmdbs_next  (struct cmdbs *o, const char *key, const char *value);
 

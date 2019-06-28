@@ -14,6 +14,7 @@
 struct cmdbc *cmdbc_alloc (void);
 void cmdbc_free (struct cmdbc *o);
 
+int cmdbc_exists (struct cmdbc *o, const char *key, const char *value);
 size_t cmdbc_count (struct cmdbc *o, const char *key);
 const char *cmdbc_first (struct cmdbc *o, const char *key);
 const char *cmdbc_next  (struct cmdbc *o, const char *key, const char *value);
