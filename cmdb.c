@@ -111,9 +111,47 @@ const char *cmdb_next (struct cmdb *o, const char *name, const char *value)
 	return cmdbs_next (o->db, o->path.path, value);
 }
 
+static int make_node (struct cmdb *o)
+{
+	struct cmdb_path backup, work;
+	const char *name;
+
+	cmdb_path_init (&backup);
+
+	if (!cmdb_path_copy (&backup, &o->path))
+		return 0;
+
+	cmdb_path_init (&work);
+
+	if (!cmdb_path_copy (&work, &o->path))
+		goto no_work;
+
+	while ((name = cmdb_path_pop (&work)) != NULL) {
+		cmdb_path_pop (&o->path);
+
+		if (cmdb_exists (o, "\n", name))
+			break;
+
+		if (!cmdb_store (o, "\n", name))
+			goto no_store;
+	}
+
+	cmdb_path_fini (&work);
+	cmdb_path_copy (&o->path, &backup);
+	cmdb_path_fini (&backup);
+	return 1;
+no_store:
+	cmdb_path_fini (&work);
+	cmdb_path_copy (&o->path, &backup);
+no_work:
+	cmdb_path_fini (&backup);
+	return 0;
+}
+
 int cmdb_store (struct cmdb *o, const char *name, const char *value)
 {
-	if (!cmdb_path_set (&o->path, name) ||
+	if (!make_node (o) ||
+	    !cmdb_path_set (&o->path, name) ||
 	    !cmdbs_store (o->db, o->path.path, value))
 		return 0;
 
@@ -125,8 +163,30 @@ int cmdb_store (struct cmdb *o, const char *name, const char *value)
 	       cmdbs_store (o->db, o->path.path, name);
 }
 
+static int drop_node (struct cmdb *o)
+{
+	const char *p;
+
+	for (p = cmdb_first (o, "\n"); p != NULL; p = cmdb_next (o, "\n", p))
+		if (cmdb_path_push (&o->path, p)) {
+			drop_node (o);
+			cmdb_path_pop (&o->path);
+		}
+
+	cmdb_delete (o, "\n", NULL);
+
+	for (p = cmdb_first (o, "\a"); p != NULL; p = cmdb_next (o, "\a", p))
+		cmdb_delete (o, p, NULL);
+
+	cmdb_delete (o, "\a", NULL);
+	return 1;
+}
+
 int cmdb_delete (struct cmdb *o, const char *name, const char *value)
 {
+	if (name == NULL)
+		return drop_node (o);
+
 	if (!cmdb_path_set (&o->path, name) ||
 	    !cmdbs_delete (o->db, o->path.path, value))
 		return 0;
