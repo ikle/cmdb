@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+#include <ctype.h>
 #include <stdarg.h>
 #include <stdlib.h>
 
@@ -112,18 +113,30 @@ const char *cmdb_next (struct cmdb *o, const char *name, const char *value)
 
 int cmdb_store (struct cmdb *o, const char *name, const char *value)
 {
-	if (!cmdb_path_set (&o->path, name))
+	if (!cmdb_path_set (&o->path, name) ||
+	    !cmdbs_store (o->db, o->path.path, value))
 		return 0;
 
-	return cmdbs_store (o->db, o->path.path, value);
+	if (iscntrl (name[0]))
+		return 1;
+
+	/* catalogue attributes */
+	return cmdb_path_set (&o->path, "\a") &&
+	       cmdbs_store (o->db, o->path.path, name);
 }
 
 int cmdb_delete (struct cmdb *o, const char *name, const char *value)
 {
-	if (!cmdb_path_set (&o->path, name))
+	if (!cmdb_path_set (&o->path, name) ||
+	    !cmdbs_delete (o->db, o->path.path, value))
 		return 0;
 
-	return cmdbs_delete (o->db, o->path.path, value);
+	if (iscntrl (name[0]) || cmdbs_first (o->db, o->path.path) != NULL)
+		return 1;
+
+	/* remove empty attributes */
+	return cmdb_path_set (&o->path, "\a") &&
+	       cmdbs_delete (o->db, o->path.path, name);
 }
 
 int cmdb_flush (struct cmdb *o)
