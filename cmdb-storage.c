@@ -107,6 +107,14 @@ const char *cmdbs_next (struct cmdbs *o, const char *key, const char *value)
 	return cmdbc_next (o->cache, key, value);
 }
 
+const char **cmdbs_list (struct cmdbs *o, const char *key)
+{
+	if (cmdbs_first (o, key) == NULL)
+		return NULL;
+
+	return cmdbc_list (o->cache, key);
+}
+
 int cmdbs_store (struct cmdbs *o, const char *key, const char *value)
 {
 	return cmdbc_store (o->cache, key, value);

@@ -111,6 +111,14 @@ const char *cmdb_next (struct cmdb *o, const char *name, const char *value)
 	return cmdbs_next (o->db, o->path.path, value);
 }
 
+const char **cmdb_list (struct cmdb *o, const char *name)
+{
+	if (!cmdb_path_set (&o->path, name))
+		return 0;
+
+	return cmdbs_list (o->db, o->path.path);
+}
+
 static int make_node (struct cmdb *o)
 {
 	struct cmdb_path backup, work;

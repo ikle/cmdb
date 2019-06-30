@@ -7,6 +7,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <err.h>
 
@@ -20,6 +21,19 @@ static void show (struct cmdbs *o, const char *key)
 		printf ("%s = %s\n", key, p);
 }
 
+static void show_sorted (struct cmdbs *o, const char *key)
+{
+	const char **list, **p;
+
+	if ((list = cmdbs_list (o, key)) == NULL)
+		errx (1, "cannot fetch list for %s", key);
+
+	for (p = list; *p != NULL; ++p)
+		printf ("%s = %s\n", key, *p);
+
+	free (list);
+}
+
 int main (int argc, char *argv[])
 {
 	struct cmdbs *o;
@@ -31,13 +45,14 @@ int main (int argc, char *argv[])
 		cmdbs_exists (o, "address", NULL) ? "" : "not ");
 
 	if (!cmdbs_store (o, "address", "10.0.26.3/24") ||
+	    !cmdbs_store (o, "address", "10.0.26.7/24") ||
 	    !cmdbs_store (o, "address", "10.0.26.4/24"))
 		errx (1, "cannot store: %s", cmdbs_error (o));
 
 	if (!cmdbs_flush (o))
 		errx (1, "cannot flush: %s", cmdbs_error (o));
 
-	show (o, "address");
+	show_sorted (o, "address");
 	show (o, "hostname");
 
 	if (!cmdbs_store (o, "hostname", "cmdb-test"))

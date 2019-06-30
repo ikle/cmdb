@@ -166,21 +166,6 @@ int cmdbc_exists (struct cmdbc *o, const char *key, const char *value)
 	return value == NULL || ht_lookup (&r->set, value) != NULL;
 }
 
-size_t cmdbc_count (struct cmdbc *o, const char *key)
-{
-	const struct record sample = { (char *) key }, *r;
-	size_t count, i;
-
-	if ((r = ht_lookup (&o->root, &sample)) == NULL)
-		return 0;
-
-	for (count = 0, i = 0; i < r->set.size; ++i)
-		if (r->set.table[i] != NULL)
-			++count;
-
-	return count;
-}
-
 const char *cmdbc_first (struct cmdbc *o, const char *key)
 {
 	const struct record sample = { (char *) key }, *r;
@@ -215,6 +200,39 @@ const char *cmdbc_next  (struct cmdbc *o, const char *key, const char *value)
 			return r->set.table[i];
 
 	return NULL;
+}
+
+static int cmp (const void *a, const void *b)
+{
+	const char *const *p = a;
+	const char *const *q = b;
+
+	return strcoll (*p, *q);
+}
+
+const char **cmdbc_list (struct cmdbc *o, const char *key)
+{
+	const struct record sample = { (char *) key }, *r;
+	size_t count, i;
+	const char **list;
+
+	if ((r = ht_lookup (&o->root, &sample)) == NULL)
+		return NULL;
+
+	for (count = 0, i = 0; i < r->set.size; ++i)
+		if (r->set.table[i] != NULL)
+			++count;
+
+	if ((list = malloc (sizeof (list[0]) * (count + 1))) == NULL)
+		return NULL;
+
+	for (count = 0, i = 0; i < r->set.size; ++i)
+		if (r->set.table[i] != NULL)
+			list[count++] = r->set.table[i];
+
+	qsort (list, count, sizeof (list[0]), cmp);
+	list[count] = NULL;
+	return list;
 }
 
 int cmdbc_import (struct cmdbc *o, const char *key, const void *data,

@@ -26,6 +26,8 @@ int cmdb_exists (struct cmdb *o, const char *name, const char *value);
 const char *cmdb_first (struct cmdb *o, const char *name);
 const char *cmdb_next  (struct cmdb *o, const char *name, const char *value);
 
+const char **cmdb_list (struct cmdb *o, const char *name);
+
 int cmdb_store  (struct cmdb *o, const char *name, const char *value);
 int cmdb_delete (struct cmdb *o, const char *name, const char *value);
 

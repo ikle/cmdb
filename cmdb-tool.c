@@ -7,6 +7,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <err.h>
@@ -15,26 +16,39 @@
 
 static void show_attr (struct cmdb *o, int level, const char *name)
 {
-	const char *p;
+	const char **list, **p;
 
-	for (p = cmdb_first (o, name); p != NULL; p = cmdb_next (o, name, p))
-		printf ("%*s%s = %s\n", level * 4, "", name, p);
+	if ((list = cmdb_list (o, name)) == NULL)
+		return;
+
+	for (p = list; *p != NULL; ++p)
+		printf ("%*s%s = %s\n", level * 4, "", name, *p);
+
+	free (list);
 }
 
 static void show (struct cmdb *o, int level)
 {
-	const char *p;
+	const char **list, **p;
 
-	for (p = cmdb_first (o, "\a"); p != NULL; p = cmdb_next (o, "\a", p))
-		show_attr (o, level, p);
+	if ((list = cmdb_list (o, "\a")) != NULL) {
+		for (p = list; *p != NULL; ++p)
+			show_attr (o, level, *p);
 
-	for (p = cmdb_first (o, "\n"); p != NULL; p = cmdb_next (o, "\n", p)) {
-		printf ("%*s%s:\n", level * 4, "", p);
+		free (list);
+	}
 
-		if (cmdb_push (o, p)) {
-			show (o, level + 1);
-			cmdb_pop (o);
+	if ((list = cmdb_list (o, "\n")) != NULL) {
+		for (p = list; *p != NULL; ++p) {
+			printf ("%*s%s:\n", level * 4, "", *p);
+
+			if (cmdb_push (o, *p)) {
+				show (o, level + 1);
+				cmdb_pop (o);
+			}
 		}
+
+		free (list);
 	}
 }
 

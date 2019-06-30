@@ -20,6 +20,8 @@ int cmdbs_exists (struct cmdbs *o, const char *key, const char *value);
 const char *cmdbs_first (struct cmdbs *o, const char *key);
 const char *cmdbs_next  (struct cmdbs *o, const char *key, const char *value);
 
+const char **cmdbs_list (struct cmdbs *o, const char *key);
+
 int cmdbs_store  (struct cmdbs *o, const char *key, const char *value);
 int cmdbs_delete (struct cmdbs *o, const char *key, const char *value);
 
