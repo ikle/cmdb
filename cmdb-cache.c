@@ -182,7 +182,7 @@ const char *cmdbc_first (struct cmdbc *o, const char *key)
 	return NULL;
 }
 
-const char *cmdbc_next  (struct cmdbc *o, const char *key, const char *value)
+const char *cmdbc_next (struct cmdbc *o, const char *key, const char *value)
 {
 	const struct record sample = { (char *) key }, *r;
 	size_t i;
