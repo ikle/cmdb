@@ -79,12 +79,11 @@ int cmdbs_exists (struct cmdbs *o, const char *key, const char *value)
 
 const char *cmdbs_first (struct cmdbs *o, const char *key)
 {
-	const char *p;
 	TDB_DATA k, v;
 	int ret;
 
-	if ((p = cmdbc_first (o->cache, key)) != NULL)
-		return p;
+	if (cmdbc_exists (o->cache, key, NULL))
+		return cmdbc_first (o->cache, key);
 
 	k.dptr = (void *) key;
 	k.dsize = strlen (key) + 1;
