@@ -283,8 +283,7 @@ size_t cmdbc_export (struct cmdbc *o, const char *key, void *data,
 			size += snprintf (NULL, 0, "%s", entry) + 1;
 
 	if (size == 0)
-		/* drop empty nodes */
-		ht_remove (&o->root, &sample);
+		return 0;
 
 	if (size > avail)
 		return size;
