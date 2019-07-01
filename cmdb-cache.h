@@ -25,7 +25,7 @@ void cmdbc_delete (struct cmdbc *o, const char *key, const char *value);
 
 int cmdbc_import (struct cmdbc *o, const char *key, const void *data,
 		  size_t size);
-size_t cmdbc_export (const struct cmdbc *o, const char *key, void *data,
+size_t cmdbc_export (struct cmdbc *o, const char *key, void *data,
 		     size_t size);
 
 typedef int cmdbc_visitor (struct cmdbc *o, const char *key, void *cookie);

@@ -135,11 +135,9 @@ static int writer (struct cmdbc *cache, const char *key, void *cookie)
 	k.dptr  = (void *) key;
 	k.dsize = strlen (key) + 1;
 
-	if ((v.dsize = cmdbc_export (cache, key, NULL, 0)) == 0) {
+	if ((v.dsize = cmdbc_export (cache, key, NULL, 0)) == 0)
 		/* drop empty nodes */
-		cmdbc_delete (cache, key, NULL);
 		return tdb_delete (o->db, k) == 0;
-	}
 
 	if ((v.dptr = malloc (v.dsize)) == NULL)
 		return 0;

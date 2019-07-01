@@ -144,15 +144,14 @@ void cmdbc_delete (struct cmdbc *o, const char *key, const char *value)
 	const struct record sample = { (char *) key };
 	struct record *r;
 
-	if (value == NULL) {
-		ht_remove (&o->root, &sample);
-		return;
-	}
-
 	if ((r = ht_lookup (&o->root, &sample)) == NULL)
 		return;
 
-	ht_remove (&r->set, value);
+	if (value != NULL)
+		ht_remove (&r->set, value);
+	else
+		ht_clean (&r->set);
+
 	r->changed = 1;
 }
 
@@ -268,7 +267,7 @@ int cmdbc_import (struct cmdbc *o, const char *key, const void *data,
 	return 1;
 }
 
-size_t cmdbc_export (const struct cmdbc *o, const char *key, void *data,
+size_t cmdbc_export (struct cmdbc *o, const char *key, void *data,
 		     size_t avail)
 {
 	const struct record sample = { (char *) key }, *r;
@@ -282,6 +281,10 @@ size_t cmdbc_export (const struct cmdbc *o, const char *key, void *data,
 	for (size = 0, i = 0; i < r->set.size; ++i)
 		if ((entry = r->set.table[i]) != NULL)
 			size += snprintf (NULL, 0, "%s", entry) + 1;
+
+	if (size == 0)
+		/* drop empty nodes */
+		ht_remove (&o->root, &sample);
 
 	if (size > avail)
 		return size;
