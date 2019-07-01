@@ -55,6 +55,9 @@ int main (int argc, char *argv[])
 	show_sorted (o, "address");
 	show (o, "hostname");
 
+	if (!cmdbs_delete (o, "address", "10.0.26.3/24"))
+		errx (1, "cannot delete: %s", cmdbs_error (o));
+
 	if (!cmdbs_store (o, "hostname", "cmdb-test"))
 		errx (1, "cannot store: %s", cmdbs_error (o));
 
