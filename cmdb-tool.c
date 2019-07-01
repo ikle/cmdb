@@ -7,50 +7,12 @@
  */
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include <err.h>
 
 #include "cmdb.h"
-
-static void show_attr (struct cmdb *o, int level, const char *name)
-{
-	const char **list, **p;
-
-	if ((list = cmdb_list (o, name)) == NULL)
-		return;
-
-	for (p = list; *p != NULL; ++p)
-		printf ("%*s%s = %s\n", level * 4, "", name, *p);
-
-	free (list);
-}
-
-static void show (struct cmdb *o, int level)
-{
-	const char **list, **p;
-
-	if ((list = cmdb_list (o, "\a")) != NULL) {
-		for (p = list; *p != NULL; ++p)
-			show_attr (o, level, *p);
-
-		free (list);
-	}
-
-	if ((list = cmdb_list (o, "\n")) != NULL) {
-		for (p = list; *p != NULL; ++p) {
-			printf ("%*s%s:\n", level * 4, "", *p);
-
-			if (cmdb_push (o, *p)) {
-				show (o, level + 1);
-				cmdb_pop (o);
-			}
-		}
-
-		free (list);
-	}
-}
+#include "cmdb-util.h"
 
 static int usage (void)
 {
@@ -127,7 +89,7 @@ static int do_delete (struct cmdb *o, char **argv)
 
 static int do_show (struct cmdb *o, char **argv)
 {
-	show (o, 0);
+	cmdb_save (o, stdout);
 	return 1;
 }
 
