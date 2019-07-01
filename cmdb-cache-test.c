@@ -86,6 +86,8 @@ int main (int argc, char *argv[])
 
 	cmdbc_flush (o, show, NULL);
 
+	cmdbc_delete (o, address, "10.0.26.3/24");
+
 	cmdbc_store (o, "service\nssh\aaddress",  "192.168.0.1");
 	cmdbc_store (o, "service\nssh\acipher",   "magma-cbc");
 	cmdbc_store (o, "service\nsnmp\aaddress", "0.0.0.0");
