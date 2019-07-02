@@ -66,21 +66,24 @@ static int do_store (struct cmdb *o, char **argv)
 
 static int do_delete (struct cmdb *o, char **argv)
 {
-	const char *attr, *value = NULL;
-	int n = 2;
+	const char *attr = NULL, *value = NULL;
+	int n = 1;
 
 	++argv;
 
 	if (*argv == NULL || strcmp (*argv, ",") == 0)
-		errx (1, "cmdb delete: attribute name required");
+		goto action;
 
 	attr = *argv++;
+	++n;
 
-	if (*argv != NULL && strcmp (*argv, ",") != 0) {
-		value = *argv;
-		++n;
-	}
+	if (*argv == NULL || strcmp (*argv, ",") == 0)
+		goto action;
 
+	value = *argv;
+	++n;
+
+action:
 	if (!cmdb_delete (o, attr, value))
 		errx (1, "cmdb delete: %s", cmdb_error (o));
 
