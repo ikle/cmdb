@@ -7,6 +7,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "cmdb-util.h"
 
@@ -14,6 +15,29 @@ static void indent (FILE *to, int level)
 {
 	for (; level > 0; --level)
 		fputc ('\t', to);
+}
+
+static void escape (FILE *to, const char *value)
+{
+	size_t stop = strcspn (value, " \"");
+
+	if (value[stop] == '\0') {
+		fprintf (to, "%s", value);
+		return;
+	}
+
+	fputc ('"', to);
+
+	for (; *value != '\0'; ++value)
+		switch (*value) {
+		case '"': case '\\':
+			fputc ('\\', to);
+			/* pass through */
+		default:
+			fputc (*value, to);
+		}
+
+	fputc ('"', to);
 }
 
 static void show_attr (struct cmdb *o, FILE *to, int level, const char *name)
@@ -25,7 +49,9 @@ static void show_attr (struct cmdb *o, FILE *to, int level, const char *name)
 
 	for (p = list; *p != NULL; ++p) {
 		indent (to, level);
-		fprintf (to, "%s %s\n", name, *p);
+		fprintf (to, "%s ", name);
+		escape (to, *p);
+		fputc ('\n', to);
 	}
 
 	free (list);
