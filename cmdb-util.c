@@ -10,6 +10,12 @@
 
 #include "cmdb-util.h"
 
+static void indent (FILE *to, int level)
+{
+	for (; level > 0; --level)
+		fputc ('\t', to);
+}
+
 static void show_attr (struct cmdb *o, FILE *to, int level, const char *name)
 {
 	const char **list, **p;
@@ -17,8 +23,10 @@ static void show_attr (struct cmdb *o, FILE *to, int level, const char *name)
 	if ((list = cmdb_list (o, name)) == NULL)
 		return;
 
-	for (p = list; *p != NULL; ++p)
-		fprintf (to, "%*s%s = %s\n", level * 4, "", name, *p);
+	for (p = list; *p != NULL; ++p) {
+		indent (to, level);
+		fprintf (to, "%s = %s\n", name, *p);
+	}
 
 	free (list);
 }
@@ -36,7 +44,8 @@ static void show (struct cmdb *o, FILE *to, int level)
 
 	if ((list = cmdb_list (o, "\n")) != NULL) {
 		for (p = list; *p != NULL; ++p) {
-			fprintf (to, "%*s%s:\n", level * 4, "", *p);
+			indent (to, level);
+			fprintf (to, "%s:\n", *p);
 
 			if (cmdb_push (o, *p)) {
 				show (o, to, level + 1);
