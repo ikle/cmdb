@@ -25,7 +25,7 @@ static void show_attr (struct cmdb *o, FILE *to, int level, const char *name)
 
 	for (p = list; *p != NULL; ++p) {
 		indent (to, level);
-		fprintf (to, "%s = %s\n", name, *p);
+		fprintf (to, "%s %s\n", name, *p);
 	}
 
 	free (list);
