@@ -57,6 +57,19 @@ static void show_attr (struct cmdb *o, FILE *to, int level, const char *name)
 	free (list);
 }
 
+static void escape_node (FILE *to, const char *name)
+{
+	size_t stop = strcspn (name, " ");
+
+	fprintf (to, "%.*s", (int) stop, name);
+
+	if (name[stop] == '\0')
+		return;
+
+	fputc (' ', to);
+	escape (to, name + stop + 1);
+}
+
 static void show (struct cmdb *o, FILE *to, int level)
 {
 	const char **list, **p;
@@ -71,7 +84,8 @@ static void show (struct cmdb *o, FILE *to, int level)
 	if ((list = cmdb_list (o, "\n")) != NULL) {
 		for (p = list; *p != NULL; ++p) {
 			indent (to, level);
-			fprintf (to, "%s:\n", *p);
+			escape_node (to, *p);
+			fputs (":\n", to);
 
 			if (cmdb_push (o, *p)) {
 				show (o, to, level + 1);
