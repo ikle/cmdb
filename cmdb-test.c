@@ -1,7 +1,7 @@
 /*
  * Configuration Management Database Test
  *
- * Copyright (c) 2019 Alexei A. Smekalkine <ikle@ikle.ru>
+ * Copyright (c) 2019-2021 Alexei A. Smekalkine <ikle@ikle.ru>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -70,6 +70,7 @@ int main (int argc, char *argv[])
 		errx (1, "cannot set level");
 
 	printf ("\n");
+	printf ("-------- show --------\n");
 	show (o, 0);
 
 	if (!cmdb_level (o, "interfaces", "ethernet eth1", NULL) ||
@@ -83,6 +84,7 @@ int main (int argc, char *argv[])
 		errx (1, "cannot set level");
 
 	printf ("\n");
+	printf ("-------- save --------\n");
 	cmdb_save (o, stdout);
 	cmdb_close (o);
 	return 0;
