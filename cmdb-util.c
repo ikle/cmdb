@@ -1,7 +1,7 @@
 /*
  * Configuration Management Database Helpers
  *
- * Copyright (c) 2019 Alexei A. Smekalkine <ikle@ikle.ru>
+ * Copyright (c) 2019-2021 Alexei A. Smekalkine <ikle@ikle.ru>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -49,7 +49,7 @@ static void show_attr (struct cmdb *o, FILE *to, int level, const char *name)
 
 	for (p = list; *p != NULL; ++p) {
 		indent (to, level);
-		fprintf (to, "%s ", name);
+		fprintf (to, "%s = ", name);
 		escape (to, *p);
 		fputc ('\n', to);
 	}
