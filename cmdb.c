@@ -8,7 +8,9 @@
 
 #include <ctype.h>
 #include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "cmdb.h"
 #include "cmdb-path.h"
@@ -66,19 +68,51 @@ const char *cmdb_pop (struct cmdb *o)
 	return cmdb_path_pop (&o->path);
 }
 
+static int is_pair (const char *name)
+{
+	const size_t len = strlen (name);
+
+	return name[len - 1] == ':';
+}
+
+static int push_pair (struct cmdb_path *o, const char *type, const char *name)
+{
+	const size_t tlen = strlen (type);
+	const size_t nlen = strlen (name);
+	char node[tlen + nlen];
+
+	snprintf (node, sizeof (node), "%.*s%s", (int) (tlen - 1), type, name);
+
+	return cmdb_path_push (o, node);
+}
+
 /* pass NULL-terminated list of node names */
 int cmdb_level (struct cmdb *o, ...)
 {
 	va_list ap;
-	const char *p;
+	const char *p, *name;
 
 	cmdb_path_reset (&o->path);
 
 	va_start (ap, o);
 
-	while ((p = va_arg (ap, const char *)) != NULL)
-		if (p[0] == '\0' || !cmdb_path_push (&o->path, p))
+	while ((p = va_arg (ap, const char *)) != NULL) {
+		if (p[0] == '\0')
 			goto error;
+
+		if (!is_pair (p)) {
+			if (!cmdb_path_push (&o->path, p))
+				goto error;
+		}
+		else {
+			if ((name = va_arg (ap, const char *)) == NULL ||
+			    name[0] == '\0')
+				goto error;
+
+			if (!push_pair (&o->path, p, name))
+				goto error;
+		}
+	}
 
 	va_end (ap);
 	return 1;
