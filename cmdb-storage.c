@@ -1,19 +1,46 @@
 /*
  * Configuration Management Database Storage
  *
- * Copyright (c) 2019 Alexei A. Smekalkine <ikle@ikle.ru>
+ * Copyright (c) 2019-2021 Alexei A. Smekalkine <ikle@ikle.ru>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include <sys/stat.h>
 #include <fcntl.h>
 #include <tdb.h>
 
 #include "cmdb-cache.h"
 #include "cmdb-storage.h"
+
+static int make_path (const char *path)
+{
+	size_t size = strlen (path) + 1;
+	char line[size], *p;
+
+	if (path == NULL || path[0] == '\0') {
+		errno = EINVAL;
+		return 0;
+	}
+
+	strncpy (line, path, size);
+
+	for (p = line + 1; *p != '\0'; ++p)
+		if (*p == '/') {
+			*p = '\0';
+
+			if (mkdir (line, 0777) != 0 && errno != EEXIST)
+				return 0;
+
+			*p = '/';
+		}
+
+	return 1;
+}
 
 struct cmdbs {
 	struct cmdbc *cache;
@@ -32,8 +59,12 @@ struct cmdbs *cmdbs_open (const char *path, const char *mode)
 		goto no_cache;
 
 	for (; *mode != '\0'; ++mode)
-		if (*mode == 'w')
+		if (*mode == 'w') {
 			flags = O_RDWR | O_CREAT;
+
+			if (!make_path (path))
+				goto no_db;
+		}
 
 	if ((o->db = tdb_open (path, 0, 0, flags, 0666)) == NULL)
 		goto no_db;
