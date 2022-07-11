@@ -1,7 +1,7 @@
 /*
  * Configuration Management Database Test
  *
- * Copyright (c) 2019-2021 Alexei A. Smekalkine <ikle@ikle.ru>
+ * Copyright (c) 2019-2022 Alexei A. Smekalkine <ikle@ikle.ru>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -54,7 +54,8 @@ int main (int argc, char *argv[])
 
 	if (!cmdb_store (o, "address", "10.0.26.3/24") ||
 	    !cmdb_store (o, "address", "10.0.26.4/24") ||
-	    !cmdb_store (o, "address", "10.0.26.7/24"))
+	    !cmdb_store (o, "address", "10.0.26.7/24") ||
+	    !cmdb_store (o, "lldp", "on"))
 		errx (1, "cannot store: %s", cmdb_error (o));
 
 	if (!cmdb_flush (o))

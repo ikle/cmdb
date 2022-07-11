@@ -1,7 +1,7 @@
 /*
  * Configuration Management Database Storage
  *
- * Copyright (c) 2019-2021 Alexei A. Smekalkine <ikle@ikle.ru>
+ * Copyright (c) 2019-2022 Alexei A. Smekalkine <ikle@ikle.ru>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -108,25 +108,29 @@ int cmdbs_exists (struct cmdbs *o, const char *key, const char *value)
 	return cmdbc_exists (o->cache, key, value);
 }
 
-const char *cmdbs_first (struct cmdbs *o, const char *key)
+static int cmdbs_fetch (struct cmdbs *o, const char *key)
 {
 	TDB_DATA k, v;
 	int ret;
-
-	if (cmdbc_exists (o->cache, key, NULL))
-		return cmdbc_first (o->cache, key);
 
 	k.dptr = (void *) key;
 	k.dsize = strlen (key) + 1;
 	v = tdb_fetch (o->db, k);
 
 	if (v.dptr == NULL)
-		return NULL;
+		return 0;
 
 	ret = cmdbc_import (o->cache, key, v.dptr, v.dsize);
 	free (v.dptr);
+	return ret;
+}
 
-	if (!ret)
+const char *cmdbs_first (struct cmdbs *o, const char *key)
+{
+	if (cmdbc_exists (o->cache, key, NULL))
+		return cmdbc_first (o->cache, key);
+
+	if (!cmdbs_fetch (o, key))
 		return NULL;
 
 	return cmdbc_first (o->cache, key);
@@ -147,11 +151,17 @@ const char **cmdbs_list (struct cmdbs *o, const char *key)
 
 int cmdbs_store (struct cmdbs *o, const char *key, const char *value)
 {
+	if (!cmdbc_exists (o->cache, key, NULL))
+		cmdbs_fetch (o, key);
+
 	return cmdbc_store (o->cache, key, value);
 }
 
 int cmdbs_delete (struct cmdbs *o, const char *key, const char *value)
 {
+	if (!cmdbc_exists (o->cache, key, NULL))
+		cmdbs_fetch (o, key);
+
 	cmdbc_delete (o->cache, key, value);
 	return 1;
 }
