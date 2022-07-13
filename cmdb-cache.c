@@ -16,12 +16,6 @@
 
 #include "cmdb-cache.h"
 
-static const struct data_type string_type = {
-	.free	= free,
-	.eq	= string_eq,
-	.hash	= string_hash,
-};
-
 struct record {
 	char *key;
 	struct ht set;
@@ -50,6 +44,14 @@ no_key:
 	return NULL;
 }
 
+static void *record_copy (const void *from)
+{
+	const struct record *r = from;
+
+	/* W: used only to create new records */
+	return record_alloc (r->key);
+}
+
 static void record_free (struct record *o)
 {
 	if (o == NULL)
@@ -73,14 +75,15 @@ static int record_eq (const void *a, const void *b)
 	return strcmp (p->key, q->key) == 0;
 }
 
-static size_t record_hash (const void *o)
+static size_t record_hash (size_t iv, const void *o)
 {
 	const struct record *p = o;
 
-	return hash (0, p->key, strlen (p->key));
+	return hash (iv, p->key, strlen (p->key));
 }
 
 static const struct data_type record_type = {
+	.copy	= record_copy,
 	.free	= record_drop,
 	.eq	= record_eq,
 	.hash	= record_hash,
@@ -119,21 +122,12 @@ int cmdbc_store (struct cmdbc *o, const char *key, const char *value)
 {
 	const struct record sample = { (char *) key };
 	struct record *r;
-	char *v;
 
-	if ((r = ht_lookup (&o->root, &sample)) == NULL) {
-		if ((r = record_alloc (key)) == NULL ||
-		    !ht_insert (&o->root, r, 0))
-			return 0;
-	}
-
-	if ((v = strdup (value)) == NULL)
+	if ((r = ht_insert (&o->root, &sample, 0)) == NULL)
 		return 0;
 
-	if (!ht_insert (&r->set, v, 1)) {
-		free (v);
+	if (ht_insert (&r->set, value, 0) == NULL)
 		return 0;
-	}
 
 	r->changed = 1;
 	return 1;
@@ -241,28 +235,17 @@ int cmdbc_import (struct cmdbc *o, const char *key, const void *data,
 	struct record *r;
 	const char *p;
 	size_t avail, len;
-	char *v;
 
-	if ((r = ht_lookup (&o->root, &sample)) == NULL) {
-		if ((r = record_alloc (key)) == NULL ||
-		    !ht_insert (&o->root, r, 0))
-			return 0;
-	}
+	if ((r = ht_insert (&o->root, &sample, 0)) == NULL)
+		return 0;
 
 	for (
 		p = data, avail = size;
 		(len = strnlen (p, avail)) < avail;
 		++len, p += len, avail -= len
-	) {
-		if ((v = strdup (p)) == NULL)
+	)
+		if (ht_insert (&r->set, p, 0) == NULL)
 			return 0;
-
-		if (ht_insert (&r->set, v, 1))
-			continue;
-
-		free (v);
-		return 0;
-	}
 
 	return 1;
 }

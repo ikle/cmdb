@@ -3,8 +3,8 @@ URL = https://github.com/ikle/cmdb
 
 LIBNAME	= cmdb
 LIBVER	= 0
-LIBREV	= 0.2
+LIBREV	= 0.3
 
-DEPENDS	 = ikle-data tdb
+DEPENDS	 = colibri-data tdb
 
 include make-core.mk
